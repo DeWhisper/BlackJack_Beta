@@ -65,6 +65,8 @@ public class BlackJack_Beta{
     int cardWidth = 110;    //ratio 1 to 1.4
     int cardHeight = 154;   
 
+    //Endgame Textmessage
+    String message = "";
 
     JFrame frame = new JFrame("Black Jack");
     JPanel gamePanel = new JPanel(){
@@ -100,7 +102,6 @@ public class BlackJack_Beta{
                         System.out.println("DealerSum: " + dealerSum);
                         System.out.println("PlayerSum: " + playerSum);
                         
-                        String message = "";
                         if(playerSum > 21){
                             message = "You Got Busted!";
                         }
@@ -118,7 +119,9 @@ public class BlackJack_Beta{
                         }
                         g.setFont(new Font("Arial", Font.PLAIN, 30));
                         g.setColor(Color.WHITE);
-                        g.drawString(message, 220, 250); 
+                        g.drawString(message, 220, 250);
+                        
+                        restartButton.setEnabled(true); 
                 }
 
             } catch (Exception e){
@@ -129,6 +132,7 @@ public class BlackJack_Beta{
     JPanel buttonPanel = new JPanel();
     JButton hitButton = new JButton("Hit");
     JButton standButton = new JButton("Stand");
+    JButton restartButton = new JButton("Restart");
 
 
     public static void main(String[] args) {
@@ -153,6 +157,10 @@ public class BlackJack_Beta{
         buttonPanel.add(hitButton);
         standButton.setFocusable(false);
         buttonPanel.add(standButton);
+        restartButton.setFocusable(false);
+        buttonPanel.add(restartButton);
+        restartButton.setEnabled(false);
+
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         hitButton.addActionListener(new ActionListener() {
@@ -179,6 +187,35 @@ public class BlackJack_Beta{
                     dealerAceCount += card.isAce() ? 1 : 0;
                     dealerHand.add(card);
                 }
+                gamePanel.repaint();
+            }
+        });
+        
+        restartButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                // Reset deck
+                buildDeck();
+                shuffleDeck();
+                
+                // Reset dealer
+                dealerHand.clear();
+                dealerSum = 0;
+                dealerAceCount = 0;
+
+                hiddenCard = null; // Reset hidden card
+
+                // Reset player
+                playerHand.clear();
+                playerSum = 0;
+                playerAceCount = 0;
+
+                hitButton.setEnabled(true);
+                standButton.setEnabled(true);
+                restartButton.setEnabled(false);
+
+                // Start new game
+                message = "";
+                startGame();
                 gamePanel.repaint();
             }
         });
