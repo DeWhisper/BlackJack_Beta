@@ -4,7 +4,9 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -57,6 +59,8 @@ public class BlackJack_Beta{
     ArrayList<Card> playerHand;
     int playerSum;
     int playerAceCount;
+    int playerChips = 100;
+    int playerBet;
 
     //User Interface
     int boardWidth = 600;
@@ -77,7 +81,7 @@ public class BlackJack_Beta{
                 try{
                     //draw hidden card
                     Image hiddenCardImage = new ImageIcon(getClass().getResource("./BlackJackSwingCards/BACK.png")).getImage();
-                    if(!standButton.isEnabled()){
+                    if(!standButton.isEnabled() && !betButton.isEnabled()){
                         hiddenCardImage = new ImageIcon(getClass().getResource(hiddenCard.getImagePath())).getImage();
                     }
                     g.drawImage(hiddenCardImage, 20, 20, cardWidth, cardHeight, null);
@@ -95,7 +99,7 @@ public class BlackJack_Beta{
                         g.drawImage(cardImage, 20 + (cardWidth + 5)*i, 320, cardWidth, cardHeight, null);
                     }
     
-                    if(!standButton.isEnabled()){
+                    if(!standButton.isEnabled() && !betButton.isEnabled()){
                         dealerSum = reduceDealerAce();
                         playerSum = reducePlayerAce();
                         System.out.println("STAND:");
@@ -104,18 +108,22 @@ public class BlackJack_Beta{
                         
                         if(playerSum > 21){
                             message = "You Got Busted!";
+                            playerChips -= playerBet;
                         }
                         else if(dealerSum > 21){
                             message = "The House Got Busted!";
+                            playerChips += playerBet;
                         }
                         else if (dealerSum == playerSum){
                             message = "Tie!";
                         }
                         else if (playerSum > dealerSum){
                             message = "You Won!";
+                            playerChips += playerBet;
                         }
                         else if(dealerSum > playerSum){
                             message = "You Lost! The House Always Wins...";
+                            playerChips -= playerBet;
                         }
                         g.setFont(new Font("Arial", Font.PLAIN, 30));
                         g.setColor(Color.WHITE);
@@ -129,10 +137,17 @@ public class BlackJack_Beta{
             }
         }
     };
+    //Player choices
     JPanel buttonPanel = new JPanel();
     JButton hitButton = new JButton("Hit");
     JButton standButton = new JButton("Stand");
     JButton restartButton = new JButton("Restart");
+
+    //Betting
+    JButton betButton = new JButton("Bet");
+    JTextField betTextField = new JTextField();
+    JLabel chipCountText = new JLabel("Total Chips: ");
+    JLabel chipCount = new JLabel(String.valueOf(playerChips));
 
 
     public static void main(String[] args) {
@@ -159,8 +174,21 @@ public class BlackJack_Beta{
         buttonPanel.add(standButton);
         restartButton.setFocusable(false);
         buttonPanel.add(restartButton);
+        
+        betButton.setFocusable(false);
+        betTextField.setColumns(5);
+        buttonPanel.add(betButton);
+        buttonPanel.add(betTextField);
+
+        buttonPanel.add(chipCountText);
+        buttonPanel.add(chipCount);
+
+        //Disabled buttons
+        hitButton.setEnabled(false);
+        standButton.setEnabled(false);
         restartButton.setEnabled(false);
 
+        
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         hitButton.addActionListener(new ActionListener() {
@@ -209,14 +237,38 @@ public class BlackJack_Beta{
                 playerSum = 0;
                 playerAceCount = 0;
 
-                hitButton.setEnabled(true);
-                standButton.setEnabled(true);
+                //Buttons when restart
+                hitButton.setEnabled(false);
+                standButton.setEnabled(false);
                 restartButton.setEnabled(false);
+                betButton.setEnabled(true);
+                betTextField.setEnabled(true);;
+
+                //Bet restart to match win/loss
+                chipCount.setText(String.valueOf(playerChips));
 
                 // Start new game
                 message = "";
                 startGame();
                 gamePanel.repaint();
+            }
+        });
+
+        betButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+
+                int bet = Integer.parseInt(betTextField.getText());
+
+                if(bet >= 1 && bet <= playerChips){
+                    hitButton.setEnabled(true);
+                    standButton.setEnabled(true);
+                    playerBet = bet;    //saves the bet
+                    
+                    //resets the bet ui
+                    betButton.setEnabled(false);
+                    betTextField.setText("");
+                    betTextField.setEnabled(false);
+                }
             }
         });
 
